@@ -1,28 +1,13 @@
-import { mockCompanies } from "@/src/mocks/dashboard";
-import { notFound } from "next/navigation";
+"use client";
 
-type Props = {
-  params: Promise<{ id: string }>;
-};
+import { useFetchedDataStore } from "@/src/store/fetchedData.store";
 
-export default async function CompanyPage({ params }: Props) {
-  const { id } = await params;
-
-  const companyId = Number(id);
-  if (Number.isNaN(companyId)) notFound();
-
-  const company = mockCompanies.find((c) => c.id === companyId);
-  if (!company) notFound();
-
+export default function CompanyPage() {
+  const { data, setData } = useFetchedDataStore();
   return (
-    <div>
-      <h1>{company.name}</h1>
-      <p>
-        <strong>Status:</strong> {company.status}
-      </p>
-      <p>
-        <strong>Company Number:</strong> {company.companyNumber}
-      </p>
-    </div>
+    <>
+      <h1>Company Page</h1>
+      <p>{data}</p>
+    </>
   );
 }

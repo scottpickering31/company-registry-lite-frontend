@@ -1,3 +1,4 @@
+import MuiButton from "@/src/components/buttons/MuiButton";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
 import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
@@ -5,6 +6,7 @@ import MuiQueryInput from "@/src/components/layout/mui/MuiQueryInput";
 import { FilingColumns } from "@/src/features/filings";
 import { TableClient } from "@/src/features/table";
 import { mockFilings } from "@/src/mocks/filings";
+import Link from "next/link";
 
 export default function Filings() {
   return (
@@ -14,8 +16,11 @@ export default function Filings() {
         <MuiHeader
           subTitle="Filing list"
           title="Filings"
-          buttonActive
-          buttonText="File New Document"
+          buttonSlot={
+            <Link href="/filings/filing/add-filing">
+              <MuiButton>File New Document</MuiButton>
+            </Link>
+          }
         />
         <MuiQueryInput
           querySelectTitles={[

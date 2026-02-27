@@ -1,19 +1,16 @@
 import { Divider } from "@mui/material";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
-import MuiButton from "@/src/components/buttons/MuiButton";
 
 interface HeaderProps {
   title: string;
   subTitle: string;
-  buttonActive?: boolean;
-  buttonText?: string;
+  buttonSlot?: React.ReactNode;
 }
 
 export default function MuiHeader({
   title,
-  buttonActive,
-  buttonText,
   subTitle,
+  buttonSlot,
 }: HeaderProps) {
   return (
     <MuiContainer
@@ -58,8 +55,10 @@ export default function MuiHeader({
             {title}
           </h1>
         </div>
-        {buttonActive && <MuiButton>{buttonText}</MuiButton>}
+
+        {buttonSlot}
       </MuiContainer>
+
       <Divider sx={{ mt: "1rem" }} />
     </MuiContainer>
   );

@@ -1,6 +1,7 @@
 import React from "react";
 import MuiContainer from "../mui/MuiContainer";
 import { Divider } from "@mui/material";
+import Link from "next/link";
 
 export default function AuditLog() {
   return (
@@ -97,17 +98,19 @@ export default function AuditLog() {
       <MuiContainer
         sx={{ display: "flex", justifyContent: "flex-end", pt: "0.5rem" }}
       >
-        <p
-          style={{
-            fontSize: "13px",
-            fontWeight: 700,
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-            color: "#6b6157",
-          }}
-        >
-          View all logs
-        </p>
+        <Link href="/audit-logs/view-audit-logs">
+          <p
+            style={{
+              fontSize: "15px",
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "#3633de",
+            }}
+          >
+            View all logs
+          </p>
+        </Link>
       </MuiContainer>
     </MuiContainer>
   );

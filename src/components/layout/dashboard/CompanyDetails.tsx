@@ -1,6 +1,7 @@
 import MuiContainer from "../mui/MuiContainer";
 import { Divider } from "@mui/material";
 import MuiButton from "../../buttons/MuiButton";
+import Link from "next/link";
 
 export default function CompanyDetails() {
   return (
@@ -101,7 +102,9 @@ export default function CompanyDetails() {
             }}
           >
             <p style={{ fontSize: "16px", fontWeight: 700 }}>Officers</p>
-            <MuiButton>Add Officer</MuiButton>
+            <Link href="/officers/officer/add-officer">
+              <MuiButton>Add Officer</MuiButton>
+            </Link>
           </MuiContainer>
           <MuiContainer
             sx={{
@@ -157,7 +160,9 @@ export default function CompanyDetails() {
         }}
       >
         <p style={{ fontSize: "16px", fontWeight: 700 }}>Recent Filings</p>
-        <MuiButton>File New Document</MuiButton>
+        <Link href="/filings/filing/add-filing">
+          <MuiButton>File New Document</MuiButton>
+        </Link>
       </MuiContainer>
       <Divider />
       <MuiContainer

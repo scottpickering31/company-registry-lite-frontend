@@ -11,7 +11,7 @@ export default function AuditLogs() {
     <>
       <MuiNavigation />
       <MuiContainer>
-        <MuiHeader title="Audit Logs" buttonActive={false} subTitle="Audits" />
+        <MuiHeader title="Audit Logs" subTitle="Audits" />
         <MuiQueryInput
           querySelectTitles={[
             {
