@@ -4,6 +4,7 @@ const path = require("path");
 const crypto = require("crypto");
 const multer = require("multer");
 const dashboardController = require("../controllers/dashboardController");
+const { requireAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -50,10 +51,11 @@ router.get("/companies/:id", dashboardController.getCompanyDetails);
 router.get("/officers", dashboardController.getOfficerTable);
 router.get("/audit-logs", dashboardController.getAuditLogs);
 router.get("/filings", dashboardController.getFilings);
-router.post("/companies", dashboardController.createCompany);
-router.post("/officers", dashboardController.createOfficer);
+router.post("/companies", requireAuth, dashboardController.createCompany);
+router.post("/officers", requireAuth, dashboardController.createOfficer);
 router.post(
   "/filings",
+  requireAuth,
   uploadFilingPdf.single("document"),
   dashboardController.createFiling,
 );

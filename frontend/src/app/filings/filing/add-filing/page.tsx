@@ -4,6 +4,7 @@ import MuiButton from "@/src/components/buttons/MuiButton";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
 import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
+import { buildAuthHeaders, getAuthToken } from "@/src/lib/authSession";
 import { fetchCompanyTable, fetchOfficerTable } from "@/src/lib/dashboardApi";
 import { useGlobalAlertStore } from "@/src/store/globalAlert.store";
 import {
@@ -136,6 +137,14 @@ export default function AddFilingPage() {
       });
       return;
     }
+    if (!getAuthToken()) {
+      setAlert({
+        severity: "error",
+        message: "Please login before filing a document",
+      });
+      router.push("/login");
+      return;
+    }
 
     if (!file || file.type !== "application/pdf") {
       setAlert({
@@ -167,6 +176,7 @@ export default function AddFilingPage() {
 
       const response = await fetch(`${API_BASE}/api/dashboard/filings`, {
         method: "POST",
+        headers: buildAuthHeaders(),
         body: formData,
       });
 

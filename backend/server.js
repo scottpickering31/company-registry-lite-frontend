@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 app.use(cors());
@@ -13,6 +14,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const port = process.env.PORT || 3001;
 
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/auth", authRoutes);
 
 app.use((error, _req, res, _next) => {
   if (error?.message === "Only PDF files are allowed") {

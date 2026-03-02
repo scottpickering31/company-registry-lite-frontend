@@ -4,6 +4,7 @@ import MuiButton from "@/src/components/buttons/MuiButton";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
 import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
+import { buildAuthHeaders, getAuthToken } from "@/src/lib/authSession";
 import { useGlobalAlertStore } from "@/src/store/globalAlert.store";
 import { fetchCompanyTable } from "@/src/lib/dashboardApi";
 import {
@@ -106,6 +107,14 @@ export default function AddOfficerPage() {
       });
       return;
     }
+    if (!getAuthToken()) {
+      setAlert({
+        severity: "error",
+        message: "Please login before creating an officer",
+      });
+      router.push("/login");
+      return;
+    }
 
     if (resigned && resigned < appointed) {
       setAlert({
@@ -130,6 +139,7 @@ export default function AddOfficerPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...buildAuthHeaders(),
         },
         body: JSON.stringify(payload),
       });

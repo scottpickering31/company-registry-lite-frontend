@@ -3,11 +3,25 @@
 import AppBar from "@mui/material/AppBar";
 import MuiNavigationRoute from "@/src/components/layout/mui/MuiNavigationRoute";
 import { navItems } from "@/src/constants/NavItems";
-import { usePathname } from "next/navigation";
+import { clearAuthSession, getAuthUser } from "@/src/lib/authSession";
+import { usePathname, useRouter } from "next/navigation";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
+import { useMemo } from "react";
 
 export default function MuiNavigation() {
   const path = usePathname();
+  const router = useRouter();
+  const displayName = getAuthUser()?.fullName || "Guest";
+
+  const userInitial = useMemo(() => {
+    const firstChar = displayName.trim()[0];
+    return firstChar ? firstChar.toUpperCase() : "G";
+  }, [displayName]);
+
+  const onLogout = () => {
+    clearAuthSession();
+    router.push("/login");
+  };
 
   return (
     <AppBar
@@ -85,7 +99,7 @@ export default function MuiNavigation() {
                   color: "#3f3a33",
                 }}
               >
-                A
+                {userInitial}
               </div>
               <div>
                 <p
@@ -100,11 +114,12 @@ export default function MuiNavigation() {
                   Signed In
                 </p>
                 <p style={{ fontSize: "14px", fontWeight: 700, margin: 0 }}>
-                  Admin
+                  {displayName}
                 </p>
               </div>
             </div>
             <button
+              onClick={onLogout}
               className="cursor-pointer"
               style={{
                 border: "1px solid #d8cfc3",
