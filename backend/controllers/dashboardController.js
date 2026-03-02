@@ -27,6 +27,26 @@ const getOfficerTable = async (_req, res) => {
   }
 };
 
+const getAuditLogs = async (_req, res) => {
+  try {
+    const payload = await dashboardService.getAuditLogs();
+    res.json(payload);
+  } catch (error) {
+    console.error("Failed to fetch audit logs from database", error);
+    res.status(500).json({ message: "Failed to load audit logs" });
+  }
+};
+
+const getFilings = async (_req, res) => {
+  try {
+    const payload = await dashboardService.getFilings();
+    res.json(payload);
+  } catch (error) {
+    console.error("Failed to fetch filings from database", error);
+    res.status(500).json({ message: "Failed to load filings" });
+  }
+};
+
 const createCompany = async (req, res) => {
   const { name, companyNumber, status } = req.body || {};
 
@@ -78,9 +98,37 @@ const createOfficer = async (req, res) => {
   }
 };
 
+const createFiling = async (req, res) => {
+  const { companyId, type, description, officerId } = req.body || {};
+  const uploadedFile = req.file;
+
+  try {
+    const createdFiling = await dashboardService.createFiling({
+      companyId,
+      type,
+      description,
+      officerId,
+      uploadedFile,
+    });
+
+    res.status(201).json(createdFiling);
+  } catch (error) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    console.error("Failed to create filing", error);
+    res.status(500).json({ message: "Failed to create filing" });
+  }
+};
+
 module.exports = {
   getCompanyTable,
   getOfficerTable,
+  getAuditLogs,
+  getFilings,
   createCompany,
   createOfficer,
+  createFiling,
 };

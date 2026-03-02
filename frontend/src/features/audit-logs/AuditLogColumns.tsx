@@ -9,7 +9,7 @@ export const auditLogColumns: ColumnDef<AuditLog>[] = [
   },
   {
     header: "Date/Time",
-    cell: (c) => <span style={{ fontWeight: 700 }}>{c.date}</span>,
+    cell: (c) => <span style={{ fontWeight: 700 }}>{c.occurredAt}</span>,
   },
   {
     header: "Event",
@@ -17,10 +17,10 @@ export const auditLogColumns: ColumnDef<AuditLog>[] = [
   },
   {
     header: "Company Name",
-    cell: (c) => <span style={{ fontWeight: 700 }}>{c.company}</span>,
+    cell: (c) => <span style={{ fontWeight: 700 }}>{c.companyName}</span>,
   },
   {
     header: "Officer",
-    cell: (c) => <span style={{ fontWeight: 700 }}>{c.officer}</span>,
+    cell: (c) => <span style={{ fontWeight: 700 }}>{c.officerName}</span>,
   },
 ];

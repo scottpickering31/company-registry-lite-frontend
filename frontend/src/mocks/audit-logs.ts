@@ -1,6 +1,4 @@
-import { AuditLog } from "@/src/types/audit-logs.types";
-
-export const mockAuditLogs: AuditLog[] = [
+export const mockAuditLogs = [
   {
     id: 5001,
     date: "01/10/2023 10:30 AM",

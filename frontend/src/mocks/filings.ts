@@ -1,6 +1,4 @@
-import { Filing } from "../types/filings.types";
-
-export const mockFilings: Filing[] = [
+export const mockFilings = [
   {
     id: 1,
     filingId: 5001,

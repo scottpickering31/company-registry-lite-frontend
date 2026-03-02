@@ -1,12 +1,14 @@
 import type { CompanyTablePayload } from "@/src/types/dashboard.types";
 import type { Officers } from "@/src/types/officers.types";
+import type { AuditLog } from "@/src/types/audit-logs.types";
+import type { Filing } from "@/src/types/filings.types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL as string;
 
 export type FetchCompanyTableParams = {
   status?: "Active" | "Dormant" | "All";
   q?: string;
-  sortBy?: "Name" | "Date Created";
+  sortBy?: "Name" | "Company Number";
   page?: number;
   pageSize?: number;
 };
@@ -57,6 +59,30 @@ export const fetchCompanyTable = async (
 
 export const fetchOfficerTable = async (): Promise<Officers[]> => {
   const response = await fetch(`${API_BASE}/api/dashboard/officers`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  return response.json();
+};
+
+export const fetchAuditLogs = async (): Promise<AuditLog[]> => {
+  const response = await fetch(`${API_BASE}/api/dashboard/audit-logs`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  return response.json();
+};
+
+export const fetchFilings = async (): Promise<Filing[]> => {
+  const response = await fetch(`${API_BASE}/api/dashboard/filings`, {
     cache: "no-store",
   });
 

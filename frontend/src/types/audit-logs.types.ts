@@ -1,7 +1,8 @@
 export interface AuditLog {
   id: number;
-  date: string;
+  name: string;
+  occurredAt: string;
   event: string;
-  company: string;
-  officer: string;
+  companyName: string;
+  officerName: string;
 }

@@ -7,6 +7,8 @@ import { buildCompanyColumns } from "@/src/features/dashboard";
 import { fetchCompanyTable } from "@/src/lib/dashboardApi";
 import type { CompanyTablePayload } from "@/src/types/dashboard.types";
 
+type CompanySortBy = "Name" | "Company Number";
+
 type SelectConfig = {
   id: number;
   label: string;
@@ -56,7 +58,7 @@ export default function CompanyTablePanel({
 
       const next = await fetchCompanyTable({
         status: status === "All" ? undefined : (status as "Active" | "Dormant"),
-        sortBy: sortBy as "Name" | "Date Created",
+        sortBy: sortBy === "All" ? undefined : (sortBy as CompanySortBy),
         q: q ? q : undefined,
         page: 1,
         pageSize: COMPANY_TABLE_FETCH_LIMIT,

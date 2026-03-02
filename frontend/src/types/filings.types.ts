@@ -5,4 +5,6 @@ export interface Filing {
   type: string;
   dateSubmitted: string;
   submittedBy: string;
+  documentName: string;
+  documentPath: string;
 }

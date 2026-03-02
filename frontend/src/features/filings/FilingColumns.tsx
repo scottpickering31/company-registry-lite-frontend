@@ -1,8 +1,9 @@
 "use client";
 
-import ActionsButtonSet from "@/src/components/buttons/ActionsButtonSet";
 import type { ColumnDef } from "@/src/types/columns.types";
 import { Filing } from "@/src/types/filings.types";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export const FilingColumns: ColumnDef<Filing>[] = [
   {
@@ -26,9 +27,16 @@ export const FilingColumns: ColumnDef<Filing>[] = [
     cell: (c) => <span style={{ fontWeight: 700 }}>{c.submittedBy}</span>,
   },
   {
-    header: "Actions",
+    header: "Document",
     cell: (c) => (
-      <ActionsButtonSet editActive={false} view={`/companies/${c.id}`} />
+      <a
+        href={`${API_BASE}${c.documentPath}`}
+        target="_blank"
+        rel="noreferrer"
+        style={{ fontWeight: 700, textDecoration: "underline" }}
+      >
+        {c.documentName || "View PDF"}
+      </a>
     ),
   },
 ];

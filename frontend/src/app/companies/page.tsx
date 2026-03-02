@@ -31,7 +31,7 @@ export default async function Companies() {
           initialData={initialData}
           querySelectTitles={[
             { id: 1, label: "Status:", values: ["All", "Active", "Dormant"] },
-            { id: 2, label: "Sort By:", values: ["Name", "Date Created"] },
+            { id: 2, label: "Sort By:", values: ["Name", "Company Number"] },
           ]}
           textFieldLabel="Search Companies..."
           rowsPerPageOptions={[8, 12, 15]}

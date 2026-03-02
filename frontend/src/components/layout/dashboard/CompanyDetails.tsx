@@ -32,7 +32,7 @@ export default function CompanyDetails() {
             letterSpacing: "-0.02em",
           }}
         >
-          Company Details
+          Company Details:
         </p>
       </MuiContainer>
       <Divider />
@@ -60,7 +60,7 @@ export default function CompanyDetails() {
               color: "#6b6157",
             }}
           >
-            Company Number
+            Company Number:
           </p>
           <p
             style={{ fontSize: "18px", fontWeight: 700, marginTop: "0.35rem" }}
@@ -76,7 +76,7 @@ export default function CompanyDetails() {
               color: "#6b6157",
             }}
           >
-            Incorporated
+            Status:
           </p>
           <p
             style={{ fontSize: "18px", fontWeight: 700, marginTop: "0.35rem" }}

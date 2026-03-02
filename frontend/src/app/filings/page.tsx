@@ -2,13 +2,21 @@ import MuiButton from "@/src/components/buttons/MuiButton";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
 import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
-import MuiQueryInput from "@/src/components/layout/mui/MuiQueryInput";
-import { FilingColumns } from "@/src/features/filings";
-import { TableClient } from "@/src/features/table";
-import { mockFilings } from "@/src/mocks/filings";
+import { FilingTablePanel } from "@/src/features/filings";
+import { fetchFilings } from "@/src/lib/dashboardApi";
 import Link from "next/link";
 
-export default function Filings() {
+export default async function Filings() {
+  const filings = await fetchFilings();
+  const companies = [
+    "All Companies",
+    ...new Set(filings.map((filing) => filing.name).filter(Boolean)),
+  ];
+  const filingTypes = [
+    "All Types",
+    ...new Set(filings.map((filing) => filing.type).filter(Boolean)),
+  ];
+
   return (
     <>
       <MuiNavigation />
@@ -22,34 +30,20 @@ export default function Filings() {
             </Link>
           }
         />
-        <MuiQueryInput
+        <FilingTablePanel
+          initialRows={filings}
           querySelectTitles={[
             {
               id: 1,
               label: "Company:",
-              values: ["All Companies", "Active", "Dormant"],
+              values: companies,
             },
             {
               id: 2,
               label: "Type:",
-              values: [
-                "Annual Report",
-                "Change of Address",
-                "Annual Accounts",
-                "Director Appointment",
-                "Confirmation Statement",
-                "Share Allotment",
-                "Director Resignation",
-                "Change of Registered Office",
-                "Share Transfer",
-              ],
+              values: filingTypes,
             },
           ]}
-          textFieldLabel="Search filings..."
-        />
-        <TableClient
-          rows={mockFilings}
-          columns={FilingColumns}
           rowsPerPageOptions={[8, 12, 15]}
         />
       </MuiContainer>
