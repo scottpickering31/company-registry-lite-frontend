@@ -169,11 +169,11 @@ const getFilings = async () => {
       f.type,
       f.submitted_at,
       COALESCE(o.name, 'System') AS submitted_by,
-      f.document_name,
-      f.document_path
+      f.file_name,
+      f.storage_key
     FROM filings f
     JOIN companies c ON c.id = f.company_id
-    LEFT JOIN officers o ON o.id = f.officer_id
+    LEFT JOIN officers o ON o.id = f.submitted_by_officer_id
     ORDER BY f.submitted_at DESC, f.id DESC
   `);
 
@@ -184,8 +184,8 @@ const getFilings = async () => {
     type: row.type,
     dateSubmitted: formatDateUk(row.submitted_at),
     submittedBy: row.submitted_by,
-    documentName: row.document_name,
-    documentPath: row.document_path,
+    documentName: row.file_name,
+    documentPath: row.storage_key,
   }));
 };
 
@@ -266,12 +266,12 @@ const createFiling = async ({
       `
         INSERT INTO filings (
           company_id,
-          officer_id,
+          submitted_by_officer_id,
           type,
           description,
-          document_name,
-          document_path,
-          mime_type,
+          file_name,
+          storage_key,
+          file_mime,
           file_size_bytes
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)

@@ -110,7 +110,9 @@ export default function AddFilingPage() {
 
   const companyOfficers = useMemo(() => {
     if (!selectedCompanyName) return [];
-    return officers.filter((officer) => officer.company === selectedCompanyName);
+    return officers.filter(
+      (officer) => officer.company === selectedCompanyName,
+    );
   }, [officers, selectedCompanyName]);
 
   const isSubmitDisabled = useMemo(() => {
@@ -175,15 +177,9 @@ export default function AddFilingPage() {
         throw new Error(data.message || "Failed to file document");
       }
 
-      const created = (await response.json().catch(() => ({}))) as {
-        id?: number;
-      };
-
       setAlert({
         severity: "success",
-        message: created.id
-          ? `Filing #${created.id} submitted successfully.`
-          : "Filing submitted successfully.",
+        message: "Filing created successfully",
       });
 
       router.push("/filings");
@@ -288,9 +284,10 @@ export default function AddFilingPage() {
               <TextField
                 required
                 type="file"
-                inputProps={{ accept: "application/pdf" }}
-                onChange={(event) => {
-                  const nextFile = event.target.files?.[0] ?? null;
+                slotProps={{ htmlInput: { accept: "application/pdf" } }}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  const nextFile =
+                    (event.target as HTMLInputElement)?.files?.[0] ?? null;
                   setFile(nextFile);
                 }}
                 helperText={
