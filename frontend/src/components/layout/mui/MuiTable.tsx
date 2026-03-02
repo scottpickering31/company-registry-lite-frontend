@@ -19,6 +19,8 @@ type Props<T extends { id: number; name: string }> = {
   columns: ColumnDef<T>[];
   rowsPerPageOptions: [number, number, number];
   enableClientFiltering?: boolean;
+  selectedRowId?: number | null;
+  onRowSelect?: (row: T) => void;
 };
 
 export default function MuiTable<T extends { id: number; name: string }>({
@@ -26,11 +28,15 @@ export default function MuiTable<T extends { id: number; name: string }>({
   columns,
   rowsPerPageOptions = [3, 5, 10],
   enableClientFiltering = true,
+  selectedRowId,
+  onRowSelect,
 }: Props<T>) {
   const { input } = useInputStore();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const activeSelectedId =
+    selectedRowId !== undefined ? selectedRowId : selectedId;
 
   const filteredRows = useMemo(() => {
     if (!enableClientFiltering) return rows;
@@ -113,8 +119,13 @@ export default function MuiTable<T extends { id: number; name: string }>({
               <TableRow
                 key={row.id}
                 hover
-                selected={row.id === selectedId}
-                onClick={() => setSelectedId(row.id)}
+                selected={row.id === activeSelectedId}
+                onClick={() => {
+                  if (selectedRowId === undefined) {
+                    setSelectedId(row.id);
+                  }
+                  onRowSelect?.(row);
+                }}
                 sx={{
                   cursor: "pointer",
                   transition: "background-color 150ms ease",

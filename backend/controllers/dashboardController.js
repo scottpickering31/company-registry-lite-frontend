@@ -17,6 +17,23 @@ const getCompanyTable = async (req, res) => {
   }
 };
 
+const getCompanyDetails = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const payload = await dashboardService.getCompanyDetailsById(id);
+    res.json(payload);
+  } catch (error) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    console.error("Failed to fetch company details from database", error);
+    res.status(500).json({ message: "Failed to load company details" });
+  }
+};
+
 const getOfficerTable = async (_req, res) => {
   try {
     const payload = await dashboardService.getOfficerTable();
@@ -125,6 +142,7 @@ const createFiling = async (req, res) => {
 
 module.exports = {
   getCompanyTable,
+  getCompanyDetails,
   getOfficerTable,
   getAuditLogs,
   getFilings,

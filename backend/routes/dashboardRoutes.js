@@ -46,6 +46,7 @@ const uploadFilingPdf = multer({
 });
 
 router.get("/companies", dashboardController.getCompanyTable);
+router.get("/companies/:id", dashboardController.getCompanyDetails);
 router.get("/officers", dashboardController.getOfficerTable);
 router.get("/audit-logs", dashboardController.getAuditLogs);
 router.get("/filings", dashboardController.getFilings);

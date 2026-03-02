@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MuiQueryInput from "@/src/components/layout/mui/MuiQueryInput";
 import { TableClient } from "@/src/features/table";
 import { buildCompanyColumns } from "@/src/features/dashboard";
 import { fetchCompanyTable } from "@/src/lib/dashboardApi";
 import type { CompanyTablePayload } from "@/src/types/dashboard.types";
+import type { Company } from "@/src/types/companies.types";
 
 type CompanySortBy = "Name" | "Company Number";
 
@@ -20,6 +21,7 @@ type Props = {
   querySelectTitles: SelectConfig[];
   textFieldLabel?: string;
   rowsPerPageOptions: [number, number, number];
+  onCompanySelect?: (companyId: number | null) => void;
 };
 
 const DEFAULT_STATUS_ID = 1;
@@ -31,8 +33,12 @@ export default function CompanyTablePanel({
   querySelectTitles,
   textFieldLabel,
   rowsPerPageOptions,
+  onCompanySelect,
 }: Props) {
   const [data, setData] = useState<CompanyTablePayload>(initialData);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(
+    null,
+  );
   const didInit = useRef(false);
 
   const columns = useMemo(
@@ -74,6 +80,27 @@ export default function CompanyTablePanel({
     [],
   );
 
+  const effectiveSelectedCompanyId = useMemo(() => {
+    const rows = data.rows ?? [];
+    if (rows.length === 0) return null;
+    if (selectedCompanyId !== null && rows.some((row) => row.id === selectedCompanyId)) {
+      return selectedCompanyId;
+    }
+    return rows[0].id;
+  }, [data.rows, selectedCompanyId]);
+
+  useEffect(() => {
+    onCompanySelect?.(effectiveSelectedCompanyId);
+  }, [effectiveSelectedCompanyId, onCompanySelect]);
+
+  const handleRowSelect = useCallback(
+    (row: Company) => {
+      setSelectedCompanyId(row.id);
+      onCompanySelect?.(row.id);
+    },
+    [onCompanySelect],
+  );
+
   return (
     <>
       <MuiQueryInput
@@ -87,6 +114,8 @@ export default function CompanyTablePanel({
         rows={data.rows ?? []}
         rowsPerPageOptions={rowsPerPageOptions}
         enableClientFiltering={false}
+        selectedRowId={effectiveSelectedCompanyId}
+        onRowSelect={handleRowSelect}
       />
     </>
   );

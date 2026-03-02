@@ -2,6 +2,7 @@ import type { CompanyTablePayload } from "@/src/types/dashboard.types";
 import type { Officers } from "@/src/types/officers.types";
 import type { AuditLog } from "@/src/types/audit-logs.types";
 import type { Filing } from "@/src/types/filings.types";
+import type { CompanyProfile } from "@/src/types/company-profile.types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL as string;
 
@@ -88,6 +89,20 @@ export const fetchFilings = async (): Promise<Filing[]> => {
 
   if (!response.ok) {
     return [];
+  }
+
+  return response.json();
+};
+
+export const fetchCompanyProfile = async (
+  companyId: number,
+): Promise<CompanyProfile | null> => {
+  const response = await fetch(`${API_BASE}/api/dashboard/companies/${companyId}`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return null;
   }
 
   return response.json();

@@ -8,6 +8,8 @@ type TableClientProps<T extends { id: number; name: string }> = {
   columns: ColumnDef<T>[];
   rowsPerPageOptions: [number, number, number];
   enableClientFiltering?: boolean;
+  selectedRowId?: number | null;
+  onRowSelect?: (row: T) => void;
 };
 
 export default function TableClient<T extends { id: number; name: string }>({
@@ -15,6 +17,8 @@ export default function TableClient<T extends { id: number; name: string }>({
   columns,
   rowsPerPageOptions,
   enableClientFiltering,
+  selectedRowId,
+  onRowSelect,
 }: TableClientProps<T>) {
   return (
     <MuiTable
@@ -22,6 +26,8 @@ export default function TableClient<T extends { id: number; name: string }>({
       columns={columns}
       rowsPerPageOptions={rowsPerPageOptions}
       enableClientFiltering={enableClientFiltering}
+      selectedRowId={selectedRowId}
+      onRowSelect={onRowSelect}
     />
   );
 }
