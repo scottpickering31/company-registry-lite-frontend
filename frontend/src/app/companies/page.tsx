@@ -5,14 +5,16 @@ import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
 import { fetchCompanyTable } from "@/src/lib/dashboardApi";
 import Link from "next/link";
 import CompanyTablePanel from "@/src/features/dashboard/CompanyTablePanel";
+import { getServerAuthHeaders } from "@/src/lib/serverAuth";
 
 const COMPANY_TABLE_FETCH_LIMIT = 1000;
 
 export default async function Companies() {
+  const authHeaders = await getServerAuthHeaders();
   const initialData = await fetchCompanyTable({
     page: 1,
     pageSize: COMPANY_TABLE_FETCH_LIMIT,
-  });
+  }, authHeaders);
   const tableDataVersion = `${initialData.total ?? 0}:${(initialData.rows ?? [])
     .map((row) => row.id)
     .join(",")}`;

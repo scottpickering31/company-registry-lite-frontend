@@ -8,6 +8,7 @@ type TableClientProps<T extends { id: number; name: string }> = {
   columns: ColumnDef<T>[];
   rowsPerPageOptions: [number, number, number];
   enableClientFiltering?: boolean;
+  searchQuery?: string;
   selectedRowId?: number | null;
   onRowSelect?: (row: T) => void;
 };
@@ -17,6 +18,7 @@ export default function TableClient<T extends { id: number; name: string }>({
   columns,
   rowsPerPageOptions,
   enableClientFiltering,
+  searchQuery,
   selectedRowId,
   onRowSelect,
 }: TableClientProps<T>) {
@@ -26,6 +28,7 @@ export default function TableClient<T extends { id: number; name: string }>({
       columns={columns}
       rowsPerPageOptions={rowsPerPageOptions}
       enableClientFiltering={enableClientFiltering}
+      searchQuery={searchQuery}
       selectedRowId={selectedRowId}
       onRowSelect={onRowSelect}
     />

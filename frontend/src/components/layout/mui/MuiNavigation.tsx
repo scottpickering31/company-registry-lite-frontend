@@ -17,13 +17,13 @@ export default function MuiNavigation() {
   const router = useRouter();
   const displayName = useSyncExternalStore(
     subscribeAuthSession,
-    () => getAuthUser()?.fullName || "Guest",
-    () => "Guest",
+    () => getAuthUser()?.fullName ?? "",
+    () => "",
   );
 
   const userInitial = useMemo(() => {
     const firstChar = displayName.trim()[0];
-    return firstChar ? firstChar.toUpperCase() : "G";
+    return firstChar ? firstChar.toUpperCase() : "";
   }, [displayName]);
 
   const onLogout = () => {
@@ -122,7 +122,7 @@ export default function MuiNavigation() {
                   Signed In
                 </p>
                 <p style={{ fontSize: "14px", fontWeight: 700, margin: 0 }}>
-                  {displayName}
+                  {displayName || " "}
                 </p>
               </div>
             </div>

@@ -4,15 +4,17 @@ import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
 import { OfficerTablePanel } from "@/src/features/officers";
 import { fetchCompanyTable, fetchOfficerTable } from "@/src/lib/dashboardApi";
+import { getServerAuthHeaders } from "@/src/lib/serverAuth";
 import Link from "next/link";
 
 export default async function Officers() {
-  const officers = await fetchOfficerTable();
+  const authHeaders = await getServerAuthHeaders();
+  const officers = await fetchOfficerTable(authHeaders);
   const companies = await fetchCompanyTable({
     page: 1,
     pageSize: 1000,
     sortBy: "Name",
-  });
+  }, authHeaders);
   const companyNames = [
     "All Companies",
     ...new Set((companies.rows ?? []).map((company) => company.name)),

@@ -6,7 +6,6 @@ import MuiTextField from "@/src/components/layout/mui/MuiTextField";
 import { useEffect, useMemo, useState } from "react";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import { useDebounce } from "use-debounce";
-import { useInputStore } from "@/src/store/input.store";
 
 type SelectConfig = {
   id: number;
@@ -32,27 +31,27 @@ export default function MuiQueryInput({
   debounceMs = 5000,
   onQueryChange,
 }: QueryInputProps) {
-  // Memoising values as initial state - because we may not know the number of Selects at compile time
   const initialSelected = useMemo(() => {
     return Object.fromEntries(
       querySelectTitles.map((cfg) => [cfg.id, cfg.values[0] ?? ""]),
     ) as Record<number, string>;
   }, [querySelectTitles]);
 
-  // Store the MUIselected values in state
   const [selectedById, setSelectedById] =
     useState<Record<number, string>>(initialSelected);
-  const { input, setInput } = useInputStore();
+  const [input, setInput] = useState("");
 
-  // Store the debounced selected values in state - to avoid unnecessary re-renders
   const [value] = useDebounce(input, debounceMs);
+
+  useEffect(() => {
+    setSelectedById(initialSelected);
+  }, [initialSelected]);
 
   useEffect(() => {
     if (!onQueryChange) return;
     onQueryChange({ input: value, selectedById });
   }, [onQueryChange, selectedById, value]);
 
-  // storing the selected values and updating the state
   const handleSelectChange = (id: number) => (e: SelectChangeEvent<string>) => {
     const nextValue = e.target.value;
     setSelectedById((prev) => ({ ...prev, [id]: nextValue }));

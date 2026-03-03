@@ -4,6 +4,7 @@ import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
 import OfficerActionsButtonSet from "@/src/features/officers/OfficerActionsButtonSet";
 import { fetchOfficerDetails } from "@/src/lib/dashboardApi";
+import { getServerAuthHeaders } from "@/src/lib/serverAuth";
 import { Divider } from "@mui/material";
 import Link from "next/link";
 
@@ -16,8 +17,9 @@ type PageProps = {
 export default async function OfficerPage({ params }: PageProps) {
   const { id } = await params;
   const officerId = Number(id);
+  const authHeaders = await getServerAuthHeaders();
   const details = Number.isInteger(officerId)
-    ? await fetchOfficerDetails(officerId)
+    ? await fetchOfficerDetails(officerId, authHeaders)
     : null;
 
   if (!details) {

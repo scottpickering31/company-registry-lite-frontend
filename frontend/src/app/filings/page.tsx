@@ -4,10 +4,12 @@ import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
 import { FilingTablePanel } from "@/src/features/filings";
 import { fetchFilings } from "@/src/lib/dashboardApi";
+import { getServerAuthHeaders } from "@/src/lib/serverAuth";
 import Link from "next/link";
 
 export default async function Filings() {
-  const filings = await fetchFilings();
+  const authHeaders = await getServerAuthHeaders();
+  const filings = await fetchFilings(authHeaders);
   const companies = [
     "All Companies",
     ...new Set(filings.map((filing) => filing.name).filter(Boolean)),

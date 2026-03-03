@@ -12,13 +12,13 @@ import {
 import { useMemo, useState } from "react";
 import MuiTableCell from "@/src/components/layout/mui/MuiTableCell";
 import type { ColumnDef } from "@/src/types/columns.types";
-import { useInputStore } from "@/src/store/input.store";
 
 type Props<T extends { id: number; name: string }> = {
   rows: T[];
   columns: ColumnDef<T>[];
   rowsPerPageOptions: [number, number, number];
   enableClientFiltering?: boolean;
+  searchQuery?: string;
   selectedRowId?: number | null;
   onRowSelect?: (row: T) => void;
 };
@@ -28,10 +28,10 @@ export default function MuiTable<T extends { id: number; name: string }>({
   columns,
   rowsPerPageOptions = [3, 5, 10],
   enableClientFiltering = true,
+  searchQuery = "",
   selectedRowId,
   onRowSelect,
 }: Props<T>) {
-  const { input } = useInputStore();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -40,10 +40,10 @@ export default function MuiTable<T extends { id: number; name: string }>({
 
   const filteredRows = useMemo(() => {
     if (!enableClientFiltering) return rows;
-    const q = input.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter((row) => row.name.toLowerCase().includes(q));
-  }, [enableClientFiltering, input, rows]);
+  }, [enableClientFiltering, searchQuery, rows]);
 
   const visibleRows = useMemo(
     () =>
@@ -162,7 +162,7 @@ export default function MuiTable<T extends { id: number; name: string }>({
         }}
         rowsPerPageOptions={rowsPerPageOptions}
         component="div"
-        count={rows.length}
+        count={filteredRows.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={(_, newPage) => setPage(newPage)}

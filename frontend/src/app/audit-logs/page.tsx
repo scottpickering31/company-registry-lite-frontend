@@ -3,9 +3,11 @@ import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
 import { AuditLogTablePanel } from "@/src/features/audit-logs";
 import { fetchAuditLogs } from "@/src/lib/dashboardApi";
+import { getServerAuthHeaders } from "@/src/lib/serverAuth";
 
 export default async function AuditLogs() {
-  const auditLogs = await fetchAuditLogs();
+  const authHeaders = await getServerAuthHeaders();
+  const auditLogs = await fetchAuditLogs(authHeaders);
   const eventTypes = [
     "All",
     ...new Set(

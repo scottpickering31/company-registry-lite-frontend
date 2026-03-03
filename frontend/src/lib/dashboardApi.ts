@@ -16,6 +16,12 @@ export type FetchCompanyTableParams = {
   pageSize?: number;
 };
 
+export type UpdateCompanyPayload = {
+  name: string;
+  companyNumber: string;
+  status: "Active" | "Dormant";
+};
+
 const buildQueryString = (params: FetchCompanyTableParams = {}) => {
   const searchParams = new URLSearchParams();
 
@@ -43,142 +49,104 @@ const buildQueryString = (params: FetchCompanyTableParams = {}) => {
   return queryString ? `?${queryString}` : "";
 };
 
-export const fetchCompanyTable = async (
-  params?: FetchCompanyTableParams,
-): Promise<CompanyTablePayload> => {
-  const response = await fetch(
-    `${API_BASE}/api/dashboard/companies${buildQueryString(params)}`,
-    {
-      cache: "no-store",
-    },
-  );
-
-  if (!response.ok) {
-    return { columns: [], rows: [] };
-  }
-
-  return response.json();
-};
-
-export const fetchOfficerTable = async (): Promise<Officers[]> => {
-  const response = await fetch(`${API_BASE}/api/dashboard/officers`, {
+const requestJson = async <T>(
+  url: string,
+  fallback: T,
+  headers?: HeadersInit,
+): Promise<T> => {
+  const response = await fetch(url, {
     cache: "no-store",
+    headers: {
+      ...buildAuthHeaders(),
+      ...(headers || {}),
+    },
   });
 
   if (!response.ok) {
-    return [];
+    return fallback;
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
+};
+
+const requestWithAuth = async <T>(url: string, init: RequestInit): Promise<T> => {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...buildAuthHeaders(),
+      ...(init.headers || {}),
+    },
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(data.message || "Request failed");
+  }
+
+  return response.json() as Promise<T>;
+};
+
+export const fetchCompanyTable = async (
+  params?: FetchCompanyTableParams,
+  headers?: HeadersInit,
+): Promise<CompanyTablePayload> => {
+  return requestJson(
+    `${API_BASE}/api/dashboard/companies${buildQueryString(params)}`,
+    {
+      columns: [],
+      rows: [],
+    } as CompanyTablePayload,
+    headers,
+  );
+};
+
+export const fetchOfficerTable = async (headers?: HeadersInit): Promise<Officers[]> => {
+  return requestJson(`${API_BASE}/api/dashboard/officers`, [] as Officers[], headers);
 };
 
 export const fetchOfficerDetails = async (
   officerId: number,
+  headers?: HeadersInit,
 ): Promise<OfficerDetails | null> => {
-  const response = await fetch(`${API_BASE}/api/dashboard/officers/${officerId}`, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  return response.json();
+  return requestJson(`${API_BASE}/api/dashboard/officers/${officerId}`, null, headers);
 };
 
-export const fetchAuditLogs = async (): Promise<AuditLog[]> => {
-  const response = await fetch(`${API_BASE}/api/dashboard/audit-logs`, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    return [];
-  }
-
-  return response.json();
+export const fetchAuditLogs = async (headers?: HeadersInit): Promise<AuditLog[]> => {
+  return requestJson(`${API_BASE}/api/dashboard/audit-logs`, [] as AuditLog[], headers);
 };
 
-export const fetchFilings = async (): Promise<Filing[]> => {
-  const response = await fetch(`${API_BASE}/api/dashboard/filings`, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    return [];
-  }
-
-  return response.json();
+export const fetchFilings = async (headers?: HeadersInit): Promise<Filing[]> => {
+  return requestJson(`${API_BASE}/api/dashboard/filings`, [] as Filing[], headers);
 };
 
 export const fetchCompanyProfile = async (
   companyId: number,
+  headers?: HeadersInit,
 ): Promise<CompanyProfile | null> => {
-  const response = await fetch(`${API_BASE}/api/dashboard/companies/${companyId}`, {
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  return response.json();
-};
-
-export type UpdateCompanyPayload = {
-  name: string;
-  companyNumber: string;
-  status: "Active" | "Dormant";
+  return requestJson(`${API_BASE}/api/dashboard/companies/${companyId}`, null, headers);
 };
 
 export const updateCompany = async (
   companyId: number,
   payload: UpdateCompanyPayload,
 ) => {
-  const response = await fetch(`${API_BASE}/api/dashboard/companies/${companyId}`, {
+  return requestWithAuth(`${API_BASE}/api/dashboard/companies/${companyId}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      ...buildAuthHeaders(),
-    },
     body: JSON.stringify(payload),
   });
-
-  if (!response.ok) {
-    const data = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(data.message || "Failed to update company");
-  }
-
-  return response.json();
 };
 
 export const deleteCompany = async (companyId: number) => {
-  const response = await fetch(`${API_BASE}/api/dashboard/companies/${companyId}`, {
+  return requestWithAuth(`${API_BASE}/api/dashboard/companies/${companyId}`, {
     method: "DELETE",
-    headers: {
-      ...buildAuthHeaders(),
-    },
+    headers: {},
   });
-
-  if (!response.ok) {
-    const data = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(data.message || "Failed to delete company");
-  }
-
-  return response.json();
 };
 
 export const deleteOfficer = async (officerId: number) => {
-  const response = await fetch(`${API_BASE}/api/dashboard/officers/${officerId}`, {
+  return requestWithAuth(`${API_BASE}/api/dashboard/officers/${officerId}`, {
     method: "DELETE",
-    headers: {
-      ...buildAuthHeaders(),
-    },
+    headers: {},
   });
-
-  if (!response.ok) {
-    const data = (await response.json().catch(() => ({}))) as { message?: string };
-    throw new Error(data.message || "Failed to delete officer");
-  }
-
-  return response.json();
 };

@@ -4,6 +4,7 @@ import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
 import { CompanyProfilePanel } from "@/src/features/companies";
 import { fetchCompanyProfile } from "@/src/lib/dashboardApi";
+import { getServerAuthHeaders } from "@/src/lib/serverAuth";
 import Link from "next/link";
 
 type PageProps = {
@@ -13,8 +14,9 @@ type PageProps = {
 export default async function CompanyPage({ params }: PageProps) {
   const { id } = await params;
   const companyId = Number(id);
+  const authHeaders = await getServerAuthHeaders();
   const profile = Number.isInteger(companyId)
-    ? await fetchCompanyProfile(companyId)
+    ? await fetchCompanyProfile(companyId, authHeaders)
     : null;
 
   if (!profile) {
