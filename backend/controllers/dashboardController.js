@@ -44,6 +44,23 @@ const getOfficerTable = async (_req, res) => {
   }
 };
 
+const getOfficerDetails = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const payload = await dashboardService.getOfficerDetailsById(id);
+    res.json(payload);
+  } catch (error) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    console.error("Failed to fetch officer details from database", error);
+    res.status(500).json({ message: "Failed to load officer details" });
+  }
+};
+
 const getAuditLogs = async (_req, res) => {
   try {
     const payload = await dashboardService.getAuditLogs();
@@ -115,6 +132,74 @@ const createOfficer = async (req, res) => {
   }
 };
 
+const updateCompany = async (req, res) => {
+  const { id } = req.params;
+  const { name, companyNumber, status } = req.body || {};
+
+  try {
+    const updatedCompany = await dashboardService.updateCompanyById(id, {
+      name,
+      companyNumber,
+      status,
+    });
+
+    res.status(200).json(updatedCompany);
+  } catch (error) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    if (error?.code === "23505") {
+      res.status(409).json({ message: "Company number already exists" });
+      return;
+    }
+
+    console.error("Failed to update company", error);
+    res.status(500).json({ message: "Failed to update company" });
+  }
+};
+
+const deleteCompany = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedCompany = await dashboardService.deleteCompanyById(id);
+    res.status(200).json({
+      message: `Company "${deletedCompany.name}" deleted successfully`,
+      deletedCompany,
+    });
+  } catch (error) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    console.error("Failed to delete company", error);
+    res.status(500).json({ message: "Failed to delete company" });
+  }
+};
+
+const deleteOfficer = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedOfficer = await dashboardService.deleteOfficerById(id);
+    res.status(200).json({
+      message: `Officer "${deletedOfficer.name}" deleted successfully`,
+      deletedOfficer,
+    });
+  } catch (error) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ message: error.message });
+      return;
+    }
+
+    console.error("Failed to delete officer", error);
+    res.status(500).json({ message: "Failed to delete officer" });
+  }
+};
+
 const createFiling = async (req, res) => {
   const { companyId, type, description, officerId } = req.body || {};
   const uploadedFile = req.file;
@@ -144,9 +229,13 @@ module.exports = {
   getCompanyTable,
   getCompanyDetails,
   getOfficerTable,
+  getOfficerDetails,
   getAuditLogs,
   getFilings,
   createCompany,
+  updateCompany,
+  deleteCompany,
+  deleteOfficer,
   createOfficer,
   createFiling,
 };

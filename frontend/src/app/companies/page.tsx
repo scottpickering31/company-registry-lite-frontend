@@ -13,6 +13,9 @@ export default async function Companies() {
     page: 1,
     pageSize: COMPANY_TABLE_FETCH_LIMIT,
   });
+  const tableDataVersion = `${initialData.total ?? 0}:${(initialData.rows ?? [])
+    .map((row) => row.id)
+    .join(",")}`;
 
   return (
     <>
@@ -28,6 +31,7 @@ export default async function Companies() {
           }
         />
         <CompanyTablePanel
+          key={tableDataVersion}
           initialData={initialData}
           querySelectTitles={[
             { id: 1, label: "Status:", values: ["All", "Active", "Dormant"] },

@@ -49,9 +49,13 @@ const uploadFilingPdf = multer({
 router.get("/companies", dashboardController.getCompanyTable);
 router.get("/companies/:id", dashboardController.getCompanyDetails);
 router.get("/officers", dashboardController.getOfficerTable);
+router.get("/officers/:id", dashboardController.getOfficerDetails);
 router.get("/audit-logs", dashboardController.getAuditLogs);
 router.get("/filings", dashboardController.getFilings);
 router.post("/companies", requireAuth, dashboardController.createCompany);
+router.put("/companies/:id", requireAuth, dashboardController.updateCompany);
+router.delete("/companies/:id", requireAuth, dashboardController.deleteCompany);
+router.delete("/officers/:id", requireAuth, dashboardController.deleteOfficer);
 router.post("/officers", requireAuth, dashboardController.createOfficer);
 router.post(
   "/filings",

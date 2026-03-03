@@ -3,6 +3,8 @@ import type { Officers } from "@/src/types/officers.types";
 import type { AuditLog } from "@/src/types/audit-logs.types";
 import type { Filing } from "@/src/types/filings.types";
 import type { CompanyProfile } from "@/src/types/company-profile.types";
+import type { OfficerDetails } from "@/src/types/officer-details.types";
+import { buildAuthHeaders } from "@/src/lib/authSession";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL as string;
 
@@ -70,6 +72,20 @@ export const fetchOfficerTable = async (): Promise<Officers[]> => {
   return response.json();
 };
 
+export const fetchOfficerDetails = async (
+  officerId: number,
+): Promise<OfficerDetails | null> => {
+  const response = await fetch(`${API_BASE}/api/dashboard/officers/${officerId}`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return response.json();
+};
+
 export const fetchAuditLogs = async (): Promise<AuditLog[]> => {
   const response = await fetch(`${API_BASE}/api/dashboard/audit-logs`, {
     cache: "no-store",
@@ -103,6 +119,65 @@ export const fetchCompanyProfile = async (
 
   if (!response.ok) {
     return null;
+  }
+
+  return response.json();
+};
+
+export type UpdateCompanyPayload = {
+  name: string;
+  companyNumber: string;
+  status: "Active" | "Dormant";
+};
+
+export const updateCompany = async (
+  companyId: number,
+  payload: UpdateCompanyPayload,
+) => {
+  const response = await fetch(`${API_BASE}/api/dashboard/companies/${companyId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...buildAuthHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(data.message || "Failed to update company");
+  }
+
+  return response.json();
+};
+
+export const deleteCompany = async (companyId: number) => {
+  const response = await fetch(`${API_BASE}/api/dashboard/companies/${companyId}`, {
+    method: "DELETE",
+    headers: {
+      ...buildAuthHeaders(),
+    },
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(data.message || "Failed to delete company");
+  }
+
+  return response.json();
+};
+
+export const deleteOfficer = async (officerId: number) => {
+  const response = await fetch(`${API_BASE}/api/dashboard/officers/${officerId}`, {
+    method: "DELETE",
+    headers: {
+      ...buildAuthHeaders(),
+    },
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(data.message || "Failed to delete officer");
   }
 
   return response.json();

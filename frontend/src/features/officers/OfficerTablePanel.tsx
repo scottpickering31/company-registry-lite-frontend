@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiQueryInput from "@/src/components/layout/mui/MuiQueryInput";
 import { TableClient } from "@/src/features/table";
-import { OfficerColumns } from "@/src/features/officers/OfficerColumns";
+import { buildOfficerColumns } from "@/src/features/officers/OfficerColumns";
 import type { Officers } from "@/src/types/officers.types";
+import { fetchOfficerTable } from "@/src/lib/dashboardApi";
 
 type SelectConfig = {
   id: number;
@@ -28,7 +29,14 @@ export default function OfficerTablePanel({
   textFieldLabel,
   rowsPerPageOptions,
 }: Props) {
+  const [allRows, setAllRows] = useState<Officers[]>(initialRows);
   const [filteredRows, setFilteredRows] = useState<Officers[]>(initialRows);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    setAllRows(initialRows);
+    setFilteredRows(initialRows);
+  }, [initialRows]);
 
   const handleQueryChange = useCallback(
     ({
@@ -42,7 +50,7 @@ export default function OfficerTablePanel({
       const company = selectedById[DEFAULT_COMPANY_ID];
       const role = selectedById[DEFAULT_ROLE_ID];
 
-      const nextRows = initialRows.filter((row) => {
+      const nextRows = allRows.filter((row) => {
         const matchesCompany = !company || company === "All Companies" || row.company === company;
         const matchesRole = !role || role === "All Roles" || row.role === role;
 
@@ -59,10 +67,21 @@ export default function OfficerTablePanel({
 
       setFilteredRows(nextRows);
     },
-    [initialRows],
+    [allRows],
   );
 
-  const columns = useMemo(() => OfficerColumns, []);
+  const refreshRows = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const rows = await fetchOfficerTable();
+      setAllRows(rows);
+      setFilteredRows(rows);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  const columns = useMemo(() => buildOfficerColumns(refreshRows), [refreshRows]);
 
   return (
     <>
@@ -78,6 +97,11 @@ export default function OfficerTablePanel({
         rowsPerPageOptions={rowsPerPageOptions}
         enableClientFiltering={false}
       />
+      {isRefreshing ? (
+        <p style={{ marginTop: "0.75rem", fontWeight: 600, color: "#6b6157" }}>
+          Refreshing officers...
+        </p>
+      ) : null}
     </>
   );
 }

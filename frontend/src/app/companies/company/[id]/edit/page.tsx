@@ -4,57 +4,79 @@ import MuiButton from "@/src/components/buttons/MuiButton";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
 import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import MuiNavigation from "@/src/components/layout/mui/MuiNavigation";
-import { buildAuthHeaders, getAuthToken } from "@/src/lib/authSession";
+import { fetchCompanyProfile, updateCompany } from "@/src/lib/dashboardApi";
+import { getAuthToken } from "@/src/lib/authSession";
 import { useGlobalAlertStore } from "@/src/store/globalAlert.store";
-import {
-  Box,
-  MenuItem,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { SubmitEvent, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { SubmitEvent, useEffect, useMemo, useState } from "react";
 
 type CompanyStatus = "Active" | "Dormant";
 
-type CreateCompanyPayload = {
-  name: string;
-  companyNumber: string;
-  status: CompanyStatus;
-};
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL as string;
-
-export default function AddCompanyPage() {
+export default function EditCompanyPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const { setAlert } = useGlobalAlertStore();
 
+  const companyId = Number(params?.id);
+  const isValidCompanyId = Number.isInteger(companyId) && companyId > 0;
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
   const [companyNumber, setCompanyNumber] = useState("");
   const [status, setStatus] = useState<CompanyStatus>("Active");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isValidCompanyId) {
+      setIsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    fetchCompanyProfile(companyId)
+      .then((profile) => {
+        if (!isMounted || !profile) return;
+        setName(String(profile.company.name ?? ""));
+        setCompanyNumber(String(profile.company.companyNumber ?? ""));
+        setStatus(
+          String(profile.company.status).toLowerCase() === "dormant"
+            ? "Dormant"
+            : "Active",
+        );
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setAlert({ severity: "error", message: "Failed to load company details." });
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [companyId, isValidCompanyId, setAlert]);
 
   const isSubmitDisabled = useMemo(() => {
-    return isSubmitting || !name.trim() || !companyNumber.trim();
-  }, [companyNumber, isSubmitting, name]);
+    return isSubmitting || isLoading || !name.trim() || !companyNumber.trim();
+  }, [companyNumber, isLoading, isSubmitting, name]);
 
   const onSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!API_BASE) {
-      setAlert({
-        severity: "error",
-        message: "Missing NEXT_PUBLIC_API_URL in frontend .env.local",
-      });
+    if (!isValidCompanyId) {
+      setAlert({ severity: "error", message: "Invalid company ID." });
       return;
     }
+
     if (!getAuthToken()) {
       setAlert({
         severity: "error",
-        message: "Please login before creating a company",
+        message: "Please login before editing a company",
       });
       router.push("/login");
       return;
@@ -62,54 +84,56 @@ export default function AddCompanyPage() {
 
     setIsSubmitting(true);
 
-    const payload: CreateCompanyPayload = {
-      name: name.trim(),
-      companyNumber: companyNumber.trim(),
-      status,
-    };
-
     try {
-      const response = await fetch(`${API_BASE}/api/dashboard/companies`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...buildAuthHeaders(),
-        },
-        body: JSON.stringify(payload),
+      await updateCompany(companyId, {
+        name: name.trim(),
+        companyNumber: companyNumber.trim(),
+        status,
       });
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => ({}))) as {
-          message?: string;
-        };
-        throw new Error(data.message || "Failed to add company");
-      }
 
       setAlert({
         severity: "success",
-        message: "Company added successfully.",
+        message: "Company updated successfully.",
       });
-      setName("");
-      setCompanyNumber("");
-      setStatus("Active");
+      router.push(`/companies/company/${companyId}`);
+      router.refresh();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to add company";
+        error instanceof Error ? error.message : "Failed to update company";
       setAlert({ severity: "error", message });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (!isValidCompanyId) {
+    return (
+      <>
+        <MuiNavigation />
+        <MuiContainer>
+          <MuiHeader
+            title="Invalid Company"
+            subTitle="Company"
+            buttonSlot={
+              <Link href="/companies">
+                <MuiButton variant="outlined">Back to Companies</MuiButton>
+              </Link>
+            }
+          />
+        </MuiContainer>
+      </>
+    );
+  }
+
   return (
     <>
       <MuiNavigation />
       <MuiContainer>
         <MuiHeader
-          title="Add Company"
-          subTitle="Company"
+          title="Edit Company"
+          subTitle={`Company #${companyId}`}
           buttonSlot={
-            <Link href="/">
+            <Link href={`/companies/company/${companyId}`}>
               <MuiButton variant="outlined">Back</MuiButton>
             </Link>
           }
@@ -126,7 +150,7 @@ export default function AddCompanyPage() {
           }}
         >
           <Typography variant="h6" sx={{ mb: "1rem", fontWeight: 700 }}>
-            Enter company details
+            Update company details
           </Typography>
 
           <Box component="form" onSubmit={onSubmit}>
@@ -138,6 +162,7 @@ export default function AddCompanyPage() {
                 onChange={(event) => setName(event.target.value)}
                 placeholder="Acme Holdings Ltd"
                 sx={{ maxWidth: "560px" }}
+                disabled={isLoading}
               />
 
               <TextField
@@ -147,16 +172,16 @@ export default function AddCompanyPage() {
                 onChange={(event) => setCompanyNumber(event.target.value)}
                 placeholder="12345678"
                 sx={{ maxWidth: "560px" }}
+                disabled={isLoading}
               />
 
               <TextField
                 select
                 label="Status"
                 value={status}
-                onChange={(event) =>
-                  setStatus(event.target.value as CompanyStatus)
-                }
+                onChange={(event) => setStatus(event.target.value as CompanyStatus)}
                 sx={{ maxWidth: "560px" }}
+                disabled={isLoading}
               >
                 <MenuItem value="Active">Active</MenuItem>
                 <MenuItem value="Dormant">Dormant</MenuItem>
@@ -164,7 +189,7 @@ export default function AddCompanyPage() {
 
               <Box>
                 <MuiButton type="submit" disabled={isSubmitDisabled}>
-                  {isSubmitting ? "Submitting..." : "Submit"}
+                  {isSubmitting ? "Saving..." : isLoading ? "Loading..." : "Save Changes"}
                 </MuiButton>
               </Box>
             </Stack>

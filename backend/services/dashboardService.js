@@ -1,4 +1,5 @@
 const fs = require("fs/promises");
+const path = require("path");
 const pool = require("../db");
 
 const companyColumns = [
@@ -14,6 +15,53 @@ const normalizeStatusForDb = (status) => {
   if (normalized === "active") return "active";
   if (normalized === "dormant") return "dormant";
   return null;
+};
+
+const parseCompanyId = (companyId) => {
+  const safeCompanyId = Number(companyId);
+  if (!Number.isInteger(safeCompanyId) || safeCompanyId <= 0) {
+    throw { statusCode: 400, message: "A valid company id is required" };
+  }
+  return safeCompanyId;
+};
+
+const parseOfficerId = (officerId) => {
+  const safeOfficerId = Number(officerId);
+  if (!Number.isInteger(safeOfficerId) || safeOfficerId <= 0) {
+    throw { statusCode: 400, message: "A valid officer id is required" };
+  }
+  return safeOfficerId;
+};
+
+const validateCompanyPayload = ({ name, companyNumber, status }) => {
+  const safeName = String(name || "").trim();
+  const safeCompanyNumber = String(companyNumber || "").trim();
+  const safeStatus = normalizeStatusForDb(status);
+
+  if (!safeName) {
+    throw { statusCode: 400, message: "Company name is required" };
+  }
+
+  if (!safeCompanyNumber) {
+    throw { statusCode: 400, message: "Company number is required" };
+  }
+
+  if (!/^\d+$/.test(safeCompanyNumber)) {
+    throw { statusCode: 400, message: "Company number must contain digits only" };
+  }
+
+  if (!safeStatus) {
+    throw {
+      statusCode: 400,
+      message: "Status must be either Active or Dormant",
+    };
+  }
+
+  return {
+    safeName,
+    safeCompanyNumber,
+    safeStatus,
+  };
 };
 
 const toDisplayStatus = (status) => {
@@ -110,11 +158,7 @@ const getCompanyTable = async ({ status, q, sortBy, page, pageSize }) => {
 };
 
 const getCompanyDetailsById = async (companyId) => {
-  const safeCompanyId = Number(companyId);
-
-  if (!Number.isInteger(safeCompanyId) || safeCompanyId <= 0) {
-    throw { statusCode: 400, message: "A valid company id is required" };
-  }
+  const safeCompanyId = parseCompanyId(companyId);
 
   const companyResult = await pool.query(
     `
@@ -237,6 +281,105 @@ const getOfficerTable = async () => {
     ...row,
     resigned: row.resigned ?? "",
   }));
+};
+
+const getOfficerDetailsById = async (officerId) => {
+  const safeOfficerId = parseOfficerId(officerId);
+
+  const officerResult = await pool.query(
+    `
+      SELECT
+        o.id,
+        o.name,
+        o.role,
+        o.appointed_on AS appointed,
+        o.resigned_on AS resigned,
+        c.id AS company_id,
+        c.name AS company_name,
+        c.company_number AS company_number,
+        c.status AS company_status
+      FROM officers o
+      JOIN companies c ON c.id = o.company_id
+      WHERE o.id = $1
+      LIMIT 1
+    `,
+    [safeOfficerId],
+  );
+
+  const officerRow = officerResult.rows[0];
+  if (!officerRow) {
+    throw { statusCode: 404, message: "Officer not found" };
+  }
+
+  const filingsResult = await pool.query(
+    `
+      SELECT
+        f.id,
+        f.type,
+        f.description,
+        f.submitted_at,
+        f.file_name,
+        f.storage_key,
+        c.id AS company_id,
+        c.name AS company_name
+      FROM filings f
+      JOIN companies c ON c.id = f.company_id
+      WHERE f.submitted_by_officer_id = $1
+      ORDER BY f.submitted_at DESC, f.id DESC
+      LIMIT 10
+    `,
+    [safeOfficerId],
+  );
+
+  const auditLogsResult = await pool.query(
+    `
+      SELECT
+        al.id,
+        al.occurred_at,
+        al.event,
+        c.id AS company_id,
+        c.name AS company_name
+      FROM audit_logs al
+      JOIN companies c ON c.id = al.company_id
+      WHERE al.officer_id = $1
+      ORDER BY al.occurred_at DESC, al.id DESC
+      LIMIT 10
+    `,
+    [safeOfficerId],
+  );
+
+  return {
+    officer: {
+      id: officerRow.id,
+      name: officerRow.name,
+      role: officerRow.role,
+      appointed: formatDateUk(officerRow.appointed),
+      resigned: officerRow.resigned ? formatDateUk(officerRow.resigned) : "",
+    },
+    company: {
+      id: officerRow.company_id,
+      name: officerRow.company_name,
+      companyNumber: String(officerRow.company_number ?? ""),
+      status: toDisplayStatus(officerRow.company_status) ?? officerRow.company_status,
+    },
+    recentFilings: filingsResult.rows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      description: row.description ?? "",
+      submittedAt: formatDateUk(row.submitted_at),
+      documentName: row.file_name,
+      documentPath: row.storage_key,
+      companyId: row.company_id,
+      companyName: row.company_name,
+    })),
+    recentAuditLogs: auditLogsResult.rows.map((row) => ({
+      id: row.id,
+      occurredAt: formatDateUk(row.occurred_at),
+      event: row.event,
+      companyId: row.company_id,
+      companyName: row.company_name,
+    })),
+  };
 };
 
 const formatDateUk = (value) => {
@@ -411,24 +554,11 @@ const createFiling = async ({
 };
 
 const createCompany = async ({ name, companyNumber, status }) => {
-  const safeName = String(name || "").trim();
-  const safeCompanyNumber = String(companyNumber || "").trim();
-  const safeStatus = normalizeStatusForDb(status);
-
-  if (!safeName) {
-    throw { statusCode: 400, message: "Company name is required" };
-  }
-
-  if (!safeCompanyNumber) {
-    throw { statusCode: 400, message: "Company number is required" };
-  }
-
-  if (!safeStatus) {
-    throw {
-      statusCode: 400,
-      message: "Status must be either Active or Dormant",
-    };
-  }
+  const { safeName, safeCompanyNumber, safeStatus } = validateCompanyPayload({
+    name,
+    companyNumber,
+    status,
+  });
 
   const result = await pool.query(
     `
@@ -449,6 +579,102 @@ const createCompany = async ({ name, companyNumber, status }) => {
     ...insertedCompany,
     status: toDisplayStatus(insertedCompany.status) ?? insertedCompany.status,
   };
+};
+
+const updateCompanyById = async (companyId, { name, companyNumber, status }) => {
+  const safeCompanyId = parseCompanyId(companyId);
+  const { safeName, safeCompanyNumber, safeStatus } = validateCompanyPayload({
+    name,
+    companyNumber,
+    status,
+  });
+
+  const result = await pool.query(
+    `
+      UPDATE companies
+      SET
+        name = $2,
+        company_number = $3,
+        status = $4
+      WHERE id = $1
+      RETURNING
+        id,
+        name,
+        company_number AS "companyNumber",
+        status
+    `,
+    [safeCompanyId, safeName, safeCompanyNumber, safeStatus],
+  );
+
+  const updatedCompany = result.rows[0];
+  if (!updatedCompany) {
+    throw { statusCode: 404, message: "Company not found" };
+  }
+
+  return {
+    ...updatedCompany,
+    status: toDisplayStatus(updatedCompany.status) ?? updatedCompany.status,
+  };
+};
+
+const deleteCompanyById = async (companyId) => {
+  const safeCompanyId = parseCompanyId(companyId);
+
+  const fileRows = await pool.query(
+    `
+      SELECT storage_key
+      FROM filings
+      WHERE company_id = $1
+    `,
+    [safeCompanyId],
+  );
+
+  const result = await pool.query(
+    `
+      DELETE FROM companies
+      WHERE id = $1
+      RETURNING id, name
+    `,
+    [safeCompanyId],
+  );
+
+  const deletedCompany = result.rows[0];
+  if (!deletedCompany) {
+    throw { statusCode: 404, message: "Company not found" };
+  }
+
+  const unlinkTasks = fileRows.rows
+    .map((row) => String(row.storage_key || "").trim())
+    .filter((storageKey) => storageKey.startsWith("/uploads/"))
+    .map((storageKey) => {
+      const relativePath = storageKey.replace(/^\/+/, "");
+      const absolutePath = path.join(__dirname, "..", relativePath);
+      return fs.unlink(absolutePath).catch(() => undefined);
+    });
+
+  await Promise.all(unlinkTasks);
+
+  return deletedCompany;
+};
+
+const deleteOfficerById = async (officerId) => {
+  const safeOfficerId = parseOfficerId(officerId);
+
+  const result = await pool.query(
+    `
+      DELETE FROM officers
+      WHERE id = $1
+      RETURNING id, name
+    `,
+    [safeOfficerId],
+  );
+
+  const deletedOfficer = result.rows[0];
+  if (!deletedOfficer) {
+    throw { statusCode: 404, message: "Officer not found" };
+  }
+
+  return deletedOfficer;
 };
 
 const parseDateOnly = (value) => {
@@ -523,9 +749,13 @@ module.exports = {
   getCompanyTable,
   getCompanyDetailsById,
   getOfficerTable,
+  getOfficerDetailsById,
   getAuditLogs,
   getFilings,
   createCompany,
+  updateCompanyById,
+  deleteCompanyById,
+  deleteOfficerById,
   createOfficer,
   createFiling,
 };

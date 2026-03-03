@@ -1,6 +1,6 @@
 "use client";
 
-import ActionsButtonSet from "@/src/components/buttons/ActionsButtonSet";
+import OfficerActionsButtonSet from "@/src/features/officers/OfficerActionsButtonSet";
 import type { ColumnDef } from "@/src/types/columns.types";
 import { Officers } from "@/src/types/officers.types";
 
@@ -21,7 +21,9 @@ const formatUkDateTime = (value: string) => {
   };
 };
 
-export const OfficerColumns: ColumnDef<Officers>[] = [
+export const buildOfficerColumns = (
+  onOfficerDeleted?: () => void,
+): ColumnDef<Officers>[] => [
   {
     header: "ID",
     cell: (c) => <span style={{ fontWeight: 700 }}>{c.id}</span>,
@@ -66,7 +68,11 @@ export const OfficerColumns: ColumnDef<Officers>[] = [
   {
     header: "Actions",
     cell: (c) => (
-      <ActionsButtonSet editActive={false} view={`/companies/${c.id}`} />
+      <OfficerActionsButtonSet
+        officerId={c.id}
+        viewHref={`/officers/officer/${c.id}`}
+        onDeleted={onOfficerDeleted}
+      />
     ),
   },
 ];

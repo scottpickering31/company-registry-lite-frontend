@@ -42,6 +42,9 @@ const renderCell = (column: CompanyColumnConfig, company: Company) => {
       return (
         <ActionsButtonSet
           editActive={true}
+          editHref={`/companies/company/${company.id}/edit`}
+          deleteActive={true}
+          deleteCompanyId={company.id}
           view={`/companies/company/${company.id}`}
         />
       );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
 import MuiHeader from "@/src/components/layout/mui/MuiHeader";
 import CompanyTablePanel from "@/src/features/dashboard/CompanyTablePanel";
@@ -21,6 +21,10 @@ export default function DashboardClient({ initialData }: Props) {
   const [selectedCompanyProfile, setSelectedCompanyProfile] =
     useState<CompanyProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const tableDataVersion = useMemo(() => {
+    const rowIds = (initialData.rows ?? []).map((row) => row.id).join(",");
+    return `${initialData.total ?? 0}:${rowIds}`;
+  }, [initialData.rows, initialData.total]);
 
   const handleCompanySelect = useCallback((companyId: number | null) => {
     setSelectedCompanyId(companyId);
@@ -71,6 +75,7 @@ export default function DashboardClient({ initialData }: Props) {
           }
         />
         <CompanyTablePanel
+          key={tableDataVersion}
           initialData={initialData}
           querySelectTitles={[
             { id: 1, label: "Status:", values: ["All", "Active", "Dormant"] },
