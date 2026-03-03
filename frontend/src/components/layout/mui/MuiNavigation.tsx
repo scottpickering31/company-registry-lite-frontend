@@ -42,7 +42,7 @@ export default function MuiNavigation() {
       }}
     >
       <MuiContainer>
-        <div className="flex flex-row justify-between py-6 items-center w-full">
+        <div className="flex flex-row justify-between items-center w-full">
           <div className="relative pl-40 min-h-[150px] flex items-center">
             <Image
               src="/images/company-registry-lite-favicon.png"
