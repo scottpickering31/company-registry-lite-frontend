@@ -13,9 +13,9 @@ const getFilings = async () => {
       COALESCE(o.name, 'System') AS submitted_by,
       f.file_name,
       f.storage_key
-    FROM filings f
-    JOIN companies c ON c.id = f.company_id
-    LEFT JOIN officers o ON o.id = f.submitted_by_officer_id
+    FROM public.filings f
+    JOIN public.companies c ON c.id = f.company_id
+    LEFT JOIN public.officers o ON o.id = f.submitted_by_officer_id
     ORDER BY f.submitted_at DESC, f.id DESC
   `);
 
@@ -67,7 +67,7 @@ const createFiling = async ({
   }
 
   const companyExists = await pool.query(
-    "SELECT id FROM companies WHERE id = $1",
+    "SELECT id FROM public.companies WHERE id = $1",
     [safeCompanyId],
   );
 
@@ -81,7 +81,7 @@ const createFiling = async ({
     }
 
     const officerExists = await pool.query(
-      "SELECT id FROM officers WHERE id = $1 AND company_id = $2",
+      "SELECT id FROM public.officers WHERE id = $1 AND company_id = $2",
       [safeOfficerId, safeCompanyId],
     );
 
@@ -106,7 +106,7 @@ const createFiling = async ({
   try {
     const result = await pool.query(
       `
-        INSERT INTO filings (
+        INSERT INTO public.filings (
           company_id,
           submitted_by_officer_id,
           type,

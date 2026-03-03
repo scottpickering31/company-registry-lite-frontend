@@ -15,8 +15,8 @@ const getOfficerTable = async () => {
       o.role,
       o.appointed_on AS appointed,
       o.resigned_on AS resigned
-    FROM officers o
-    JOIN companies c ON c.id = o.company_id
+    FROM public.officers o
+    JOIN public.companies c ON c.id = o.company_id
     ORDER BY o.id DESC
   `);
 
@@ -41,8 +41,8 @@ const getOfficerDetailsById = async (officerId) => {
         c.name AS company_name,
         c.company_number AS company_number,
         c.status AS company_status
-      FROM officers o
-      JOIN companies c ON c.id = o.company_id
+      FROM public.officers o
+      JOIN public.companies c ON c.id = o.company_id
       WHERE o.id = $1
       LIMIT 1
     `,
@@ -65,8 +65,8 @@ const getOfficerDetailsById = async (officerId) => {
         f.storage_key,
         c.id AS company_id,
         c.name AS company_name
-      FROM filings f
-      JOIN companies c ON c.id = f.company_id
+      FROM public.filings f
+      JOIN public.companies c ON c.id = f.company_id
       WHERE f.submitted_by_officer_id = $1
       ORDER BY f.submitted_at DESC, f.id DESC
       LIMIT 10
@@ -82,8 +82,8 @@ const getOfficerDetailsById = async (officerId) => {
         al.event,
         c.id AS company_id,
         c.name AS company_name
-      FROM audit_logs al
-      JOIN companies c ON c.id = al.company_id
+      FROM public.audit_logs al
+      JOIN public.companies c ON c.id = al.company_id
       WHERE al.officer_id = $1
       ORDER BY al.occurred_at DESC, al.id DESC
       LIMIT 10
@@ -130,7 +130,7 @@ const deleteOfficerById = async (officerId) => {
 
   const result = await pool.query(
     `
-      DELETE FROM officers
+      DELETE FROM public.officers
       WHERE id = $1
       RETURNING id, name
     `,
@@ -186,7 +186,7 @@ const createOfficer = async ({
   }
 
   const companyExists = await pool.query(
-    "SELECT id FROM companies WHERE id = $1",
+    "SELECT id FROM public.companies WHERE id = $1",
     [safeCompanyId],
   );
 
@@ -196,7 +196,7 @@ const createOfficer = async ({
 
   const result = await pool.query(
     `
-      INSERT INTO officers (name, company_id, role, appointed_on, resigned_on)
+      INSERT INTO public.officers (name, company_id, role, appointed_on, resigned_on)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING id, name, role, appointed_on AS appointed, resigned_on AS resigned
     `,

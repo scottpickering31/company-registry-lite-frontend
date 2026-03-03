@@ -15,7 +15,10 @@ const getJwtSecret = () => {
   return secret;
 };
 
-const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
+const normalizeEmail = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase();
 
 const validateCredentials = ({ fullName, email, password, requireName }) => {
   const normalizedEmail = normalizeEmail(email);
@@ -81,7 +84,7 @@ const signup = async ({ fullName, email, password }) => {
   try {
     const insertResult = await pool.query(
       `
-        INSERT INTO users (full_name, email, password_hash)
+        INSERT INTO public.users (full_name, email, password_hash)
         VALUES ($1, $2, $3)
         RETURNING id, full_name, email, created_at
       `,
@@ -91,7 +94,10 @@ const signup = async ({ fullName, email, password }) => {
     createdUser = insertResult.rows[0];
   } catch (error) {
     if (error?.code === "23505") {
-      throw { statusCode: 409, message: "An account with this email already exists" };
+      throw {
+        statusCode: 409,
+        message: "An account with this email already exists",
+      };
     }
 
     throw error;
@@ -113,7 +119,7 @@ const login = async ({ email, password }) => {
   const userResult = await pool.query(
     `
       SELECT id, full_name, email, password_hash, created_at, is_active
-      FROM users
+      FROM public.users
       WHERE email = $1
       LIMIT 1
     `,
@@ -134,7 +140,7 @@ const login = async ({ email, password }) => {
 
   await pool.query(
     `
-      UPDATE users
+      UPDATE public.users
       SET last_login_at = NOW(), updated_at = NOW()
       WHERE id = $1
     `,

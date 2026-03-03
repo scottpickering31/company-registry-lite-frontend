@@ -9,9 +9,9 @@ const getAuditLogs = async () => {
       al.event,
       c.name AS company_name,
       o.name AS officer_name
-    FROM audit_logs al
-    JOIN companies c ON c.id = al.company_id
-    LEFT JOIN officers o ON o.id = al.officer_id
+    FROM public.audit_logs al
+    JOIN public.companies c ON c.id = al.company_id
+    LEFT JOIN public.officers o ON o.id = al.officer_id
     ORDER BY al.occurred_at DESC, al.id DESC
   `);
 

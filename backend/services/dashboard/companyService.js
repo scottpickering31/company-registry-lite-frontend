@@ -66,7 +66,7 @@ const getCompanyTable = async ({ status, q, sortBy, page, pageSize }) => {
   }
 
   const countResult = await pool.query(
-    `SELECT COUNT(*)::int AS total FROM companies ${whereSql}`,
+    `SELECT COUNT(*)::int AS total FROM public.companies ${whereSql}`,
     values,
   );
 
@@ -78,7 +78,7 @@ const getCompanyTable = async ({ status, q, sortBy, page, pageSize }) => {
         name,
         status,
         company_number AS "companyNumber"
-      FROM companies
+      FROM public.companies
       ${whereSql}
       ORDER BY ${orderBy}
       LIMIT $${dataValues.length - 1}
@@ -110,7 +110,7 @@ const getCompanyDetailsById = async (companyId) => {
         status,
         company_number AS "companyNumber",
         created_at
-      FROM companies
+      FROM public.companies
       WHERE id = $1
       LIMIT 1
     `,
@@ -130,7 +130,7 @@ const getCompanyDetailsById = async (companyId) => {
         o.role,
         o.appointed_on AS appointed,
         o.resigned_on AS resigned
-      FROM officers o
+      FROM public.officers o
       WHERE o.company_id = $1
       ORDER BY o.id DESC
     `,
@@ -147,8 +147,8 @@ const getCompanyDetailsById = async (companyId) => {
         f.file_name,
         f.storage_key,
         COALESCE(o.name, 'System') AS submitted_by
-      FROM filings f
-      LEFT JOIN officers o ON o.id = f.submitted_by_officer_id
+      FROM public.filings f
+      LEFT JOIN public.officers o ON o.id = f.submitted_by_officer_id
       WHERE f.company_id = $1
       ORDER BY f.submitted_at DESC, f.id DESC
       LIMIT 10
@@ -163,8 +163,8 @@ const getCompanyDetailsById = async (companyId) => {
         al.occurred_at,
         al.event,
         COALESCE(o.name, 'System') AS officer_name
-      FROM audit_logs al
-      LEFT JOIN officers o ON o.id = al.officer_id
+      FROM public.audit_logs al
+      LEFT JOIN public.officers o ON o.id = al.officer_id
       WHERE al.company_id = $1
       ORDER BY al.occurred_at DESC, al.id DESC
       LIMIT 10
@@ -214,7 +214,7 @@ const createCompany = async ({ name, companyNumber, status }) => {
 
   const result = await pool.query(
     `
-      INSERT INTO companies (name, company_number, status)
+      INSERT INTO public.companies (name, company_number, status)
       VALUES ($1, $2, $3)
       RETURNING
         id,
@@ -243,7 +243,7 @@ const updateCompanyById = async (companyId, { name, companyNumber, status }) => 
 
   const result = await pool.query(
     `
-      UPDATE companies
+      UPDATE public.companies
       SET
         name = $2,
         company_number = $3,
@@ -275,7 +275,7 @@ const deleteCompanyById = async (companyId) => {
   const fileRows = await pool.query(
     `
       SELECT storage_key
-      FROM filings
+      FROM public.filings
       WHERE company_id = $1
     `,
     [safeCompanyId],
@@ -283,7 +283,7 @@ const deleteCompanyById = async (companyId) => {
 
   const result = await pool.query(
     `
-      DELETE FROM companies
+      DELETE FROM public.companies
       WHERE id = $1
       RETURNING id, name
     `,
