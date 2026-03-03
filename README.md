@@ -5,7 +5,7 @@ A full stack company management and filing system built with a modern cloud nati
 <img width="1708" height="972" alt="Screenshot 2026-03-03 at 20 27 00" src="https://github.com/user-attachments/assets/55a6234d-2ce7-4f64-9504-9894f9c77e80" />
 
 
-🔗 **Live Demo:** https://company-registry-lite.vercel.app/
+🔗 **Live Demo:** https://company-registry-lite.vercel.app/ -> Test User: email: testaccount@gmail.com -> Password: tester123
 
 🖥 **Frontend:** Vercel  
 
