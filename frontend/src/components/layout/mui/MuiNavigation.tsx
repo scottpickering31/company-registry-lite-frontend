@@ -11,6 +11,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
 import { useMemo, useSyncExternalStore } from "react";
+import Image from "next/image";
 
 export default function MuiNavigation() {
   const path = usePathname();
@@ -42,23 +43,19 @@ export default function MuiNavigation() {
     >
       <MuiContainer>
         <div className="flex flex-row justify-between py-6 items-center w-full">
-          <div className="flex flex-row items-center gap-3">
-            <div
+          <div className="relative pl-40 min-h-[150px] flex items-center">
+            <Image
+              src="/images/company-registry-lite-favicon.png"
+              alt="logo"
+              width={200}
+              height={200}
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, #2c2a26, #6b6157)",
-                display: "grid",
-                placeItems: "center",
-                color: "#fff7ea",
-                fontWeight: 800,
-                fontSize: "14px",
-                letterSpacing: "0.08em",
+                position: "absolute",
+                left: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
               }}
-            >
-              CRL
-            </div>
+            />
             <div>
               <p
                 style={{

@@ -12,10 +12,13 @@ export default async function Dashboard() {
     redirect("/login");
   }
 
-  const initialData = await fetchCompanyTable({
-    page: 1,
-    pageSize: COMPANY_TABLE_FETCH_LIMIT,
-  }, authHeaders);
+  const initialData = await fetchCompanyTable(
+    {
+      page: 1,
+      pageSize: COMPANY_TABLE_FETCH_LIMIT,
+    },
+    authHeaders,
+  );
 
   return (
     <>
