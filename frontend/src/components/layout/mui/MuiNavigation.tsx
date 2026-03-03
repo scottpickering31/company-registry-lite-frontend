@@ -3,15 +3,23 @@
 import AppBar from "@mui/material/AppBar";
 import MuiNavigationRoute from "@/src/components/layout/mui/MuiNavigationRoute";
 import { navItems } from "@/src/constants/NavItems";
-import { clearAuthSession, getAuthUser } from "@/src/lib/authSession";
+import {
+  clearAuthSession,
+  getAuthUser,
+  subscribeAuthSession,
+} from "@/src/lib/authSession";
 import { usePathname, useRouter } from "next/navigation";
 import MuiContainer from "@/src/components/layout/mui/MuiContainer";
-import { useMemo } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 export default function MuiNavigation() {
   const path = usePathname();
   const router = useRouter();
-  const displayName = getAuthUser()?.fullName || "Guest";
+  const displayName = useSyncExternalStore(
+    subscribeAuthSession,
+    () => getAuthUser()?.fullName || "Guest",
+    () => "Guest",
+  );
 
   const userInitial = useMemo(() => {
     const firstChar = displayName.trim()[0];

@@ -42,7 +42,8 @@ export default function CompanyDetails({ profile, isLoading = false }: Props) {
             letterSpacing: "-0.02em",
           }}
         >
-          Company Details:
+          Company Details:{" "}
+          {isLoading ? "Loading..." : hasProfile ? profile?.company.name : "-"}
         </p>
       </MuiContainer>
       <Divider />
@@ -78,7 +79,7 @@ export default function CompanyDetails({ profile, isLoading = false }: Props) {
             {isLoading
               ? "Loading..."
               : hasProfile
-                ? profile.company.companyNumber
+                ? profile?.company.companyNumber
                 : "-"}
           </p>
           <Divider sx={{ my: "0.75rem" }} />
@@ -95,7 +96,11 @@ export default function CompanyDetails({ profile, isLoading = false }: Props) {
           <p
             style={{ fontSize: "18px", fontWeight: 700, marginTop: "0.35rem" }}
           >
-            {isLoading ? "Loading..." : hasProfile ? profile.company.status : "-"}
+            {isLoading
+              ? "Loading..."
+              : hasProfile
+                ? profile?.company.status
+                : "-"}
           </p>
         </MuiContainer>
 
@@ -127,19 +132,23 @@ export default function CompanyDetails({ profile, isLoading = false }: Props) {
             }}
           >
             {isLoading && (
-              <p style={{ color: "#6b6157", fontWeight: 600 }}>Loading officers...</p>
+              <p style={{ color: "#6b6157", fontWeight: 600 }}>
+                Loading officers...
+              </p>
             )}
             {!isLoading && !hasProfile && (
               <p style={{ color: "#6b6157", fontWeight: 600 }}>
                 Select a company from the table to view officers.
               </p>
             )}
-            {!isLoading && hasProfile && profile.officers.length === 0 && (
-              <p style={{ color: "#6b6157", fontWeight: 600 }}>No officers for this company.</p>
+            {!isLoading && hasProfile && profile?.officers.length === 0 && (
+              <p style={{ color: "#6b6157", fontWeight: 600 }}>
+                No officers for this company.
+              </p>
             )}
             {!isLoading &&
               hasProfile &&
-              profile.officers.map((officer) => (
+              profile?.officers.map((officer) => (
                 <MuiContainer
                   key={officer.id}
                   sx={{
@@ -216,7 +225,7 @@ export default function CompanyDetails({ profile, isLoading = false }: Props) {
             Select a company from the table to view filings.
           </li>
         )}
-        {!isLoading && hasProfile && profile.filings.length === 0 && (
+        {!isLoading && hasProfile && profile?.filings.length === 0 && (
           <li
             style={{
               padding: "0.7rem 0.85rem",
@@ -231,7 +240,7 @@ export default function CompanyDetails({ profile, isLoading = false }: Props) {
         )}
         {!isLoading &&
           hasProfile &&
-          profile.filings.slice(0, 5).map((filing) => (
+          profile?.filings.slice(0, 5).map((filing) => (
             <li
               key={filing.id}
               style={{
